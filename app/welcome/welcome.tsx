@@ -87,4 +87,55 @@ const resources = [
 			</svg>
 		),
 	},
+	{
+		href: "/excel",
+		text: "Download Excel",
+		icon: (
+			<svg
+				xmlns="http://www.w3.org/2000/svg"
+				width="24"
+				height="20"
+				viewBox="0 0 24 20"
+				fill="none"
+				aria-hidden="true"
+			>
+				<path
+					d="M7 1.5h8.2L20.5 6v12.5H7V1.5Z"
+					stroke="currentColor"
+					stroke-width="1.5"
+					stroke-linejoin="round"
+				/>
+				<path
+					d="M15.2 1.5V6H20.5"
+					stroke="currentColor"
+					stroke-width="1.5"
+					stroke-linejoin="round"
+				/>
+				<path
+					d="M9 8h9M9 11h9M9 14h9M12 7.5v7.5M15 7.5v7.5"
+					stroke="currentColor"
+					stroke-width="1"
+					stroke-linecap="round"
+					opacity="0.85"
+				/>
+				<rect
+					x="1.5"
+					y="6.5"
+					width="7"
+					height="9"
+					rx="1.2"
+					fill="currentColor"
+					opacity="0.18"
+					stroke="currentColor"
+					stroke-width="1.5"
+				/>
+				<path
+					d="M3.5 8.4l3 5.2M6.5 8.4l-3 5.2"
+					stroke="currentColor"
+					stroke-width="1.8"
+					stroke-linecap="round"
+				/>
+			</svg>
+		),
+	},
 ];
