@@ -9,7 +9,7 @@
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
 	"name": "tiny-sky-51be",
-	"compatibility_date": "2025-10-08",
+	"compatibility_date": "2026-01-01",
 	"main": "./workers/app.ts",
 	"vars": {
 		"VALUE_FROM_CLOUDFLARE": "Hello from Hono/CF"
