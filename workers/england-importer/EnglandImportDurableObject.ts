@@ -20,6 +20,7 @@ interface ImportCheckpoint {
 	sourceName: string;
 	importRunId: string;
 	startedAt: string;
+	lastCheckpointAt?: string;
 	completedAt?: string;
 	errorSummary?: string;
 	offset: number;
@@ -36,6 +37,9 @@ const DEFAULT_ROW_BUDGET = 500_000;
 const PRESCRIBED_BATCH_SIZE = 500;
 
 export class EnglandImportDurableObject {
+	private readonly seenBnfItems = new Set<string>();
+	private readonly practiceFingerprintByCode = new Map<string, string>();
+
 	constructor(
 		private readonly state: DurableObjectState,
 		private readonly env: EnglandWorkerBindings,
@@ -95,6 +99,9 @@ export class EnglandImportDurableObject {
 			tailBase64: "",
 			headerIndex: null,
 		};
+
+		this.seenBnfItems.clear();
+		this.practiceFingerprintByCode.clear();
 
 		await this.writeCheckpoint(checkpoint);
 
@@ -310,10 +317,31 @@ export class EnglandImportDurableObject {
 			await repository.savePrescribedItems(prescribedItems, PRESCRIBED_BATCH_SIZE);
 		}
 		if (practices.length > 0) {
-			await repository.savePractices(practices);
+			const uncachedPractices = practices.filter((practice) => {
+				const fingerprint = `${practice.name}\u0000${practice.addr1}\u0000${practice.addr2}\u0000${practice.addr3}\u0000${practice.addr4}\u0000${practice.addr5}`;
+				const existing = this.practiceFingerprintByCode.get(practice.code);
+				if (existing === fingerprint) {
+					return false;
+				}
+				this.practiceFingerprintByCode.set(practice.code, fingerprint);
+				return true;
+			});
+			if (uncachedPractices.length > 0) {
+				await repository.savePractices(uncachedPractices);
+			}
 		}
 		if (bnfItems.length > 0) {
-			await repository.saveBnfItems(bnfItems);
+			const uncachedBnfItems = bnfItems.filter((item) => {
+				const key = `${item.code}\u0000${item.name}`;
+				if (this.seenBnfItems.has(key)) {
+					return false;
+				}
+				this.seenBnfItems.add(key);
+				return true;
+			});
+			if (uncachedBnfItems.length > 0) {
+				await repository.saveBnfItems(uncachedBnfItems);
+			}
 		}
 		if (periods.length > 0) {
 			await repository.savePeriods(periods);
@@ -325,6 +353,7 @@ export class EnglandImportDurableObject {
 	}
 
 	private async writeCheckpoint(checkpoint: ImportCheckpoint): Promise<void> {
+		checkpoint.lastCheckpointAt = new Date().toISOString();
 		await this.state.storage.put(CHECKPOINT_KEY, checkpoint);
 	}
 
